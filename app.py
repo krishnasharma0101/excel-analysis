@@ -1,236 +1,3 @@
-# import streamlit as st
-# import pandas as pd
-# import requests
-# import json
-# import re
-# import io
-# import os
-# import contextlib
-# from dotenv import load_dotenv
-
-# # Load environment variables
-# load_dotenv()
-
-# # OpenRouter API configuration
-# OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-# API_URL = "https://openrouter.ai/api/v1/chat/completions"
-# MODEL = "tngtech/deepseek-r1t-chimera:free"
-
-# def process_with_gemini(prompt, data_description):
-#     headers = {
-#         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-#         "Content-Type": "application/json"
-#     }
-
-#     data = {
-#         "model": MODEL,
-#         "messages": [
-#             {
-#                 "role": "user",
-#                 "content": f"{prompt}\n\nData Description:\n{data_description}"
-#             }
-#         ]
-#     }
-
-#     try:
-#         response = requests.post(API_URL, headers=headers, json=data)
-#         response.raise_for_status()
-#         content = response.json()["choices"][0]["message"]["content"]
-
-#         # Extract Python code block
-#         code_match = re.search(r"```(?:python)?\n(.*?)```", content, re.DOTALL)
-#         if code_match:
-#             return code_match.group(1).strip()
-#         else:
-#             return content.strip()
-#     except Exception as e:
-#         return f"Error processing request: {str(e)}"
-
-# def execute_user_code(user_code, dfs):
-#     output = io.StringIO()
-#     local_vars = {"dfs": dfs, "pd": pd}
-
-#     try:
-#         with contextlib.redirect_stdout(output):
-#             exec(user_code, {}, local_vars)
-#     except Exception as e:
-#         return f"Error during code execution: {str(e)}"
-
-#     return output.getvalue() or "Code executed successfully. No output to show."
-
-# def main():
-#     st.title("Excel Data Analysis Dashboard")
-#     st.write("Upload your Excel files and provide instructions for analysis")
-
-#     # File upload
-#     uploaded_files = st.file_uploader("Upload Excel files", type=['xlsx', 'xls'], accept_multiple_files=True)
-
-#     if uploaded_files:
-#         dfs = {}
-#         data_description = ""
-
-#         # Read and describe uploaded files
-#         for file in uploaded_files:
-#             df = pd.read_excel(file)
-#             dfs[file.name] = df
-#             data_description += f"\nFile: {file.name}\n"
-#             data_description += f"Columns: {', '.join(df.columns)}\n"
-#             data_description += f"Number of rows: {len(df)}\n"
-#             data_description += f"Sample data:\n{df.head().to_string(index=False)}\n"
-
-#         # Preview uploaded files
-#         st.subheader("Uploaded Files Preview")
-#         for name, df in dfs.items():
-#             st.write(f"**{name}**")
-#             st.write(f"Shape: {df.shape}")
-#             st.dataframe(df.head())
-
-#         # User prompt
-#         st.subheader("Analysis Instructions")
-#         prompt = st.text_area("Enter your instructions for data analysis",
-#                               placeholder="Example: Compare the data between files and find discrepancies in the 'amount' column")
-
-#         # Process
-#         if st.button("Process Data"):
-#             if prompt:
-#                 with st.spinner("Sending to Gemini and processing..."):
-#                     code = process_with_gemini(prompt, data_description)
-#                     st.subheader("Generated Python Code")
-#                     st.code(code, language="python")
-
-#                     result = execute_user_code(code, dfs)
-#                     st.subheader("Execution Result")
-#                     st.text(result)
-#             else:
-#                 st.warning("Please enter instructions for analysis")
-
-# if __name__ == "__main__":
-#     main()
-
-
-# import streamlit as st
-# import pandas as pd
-# import requests
-# import json
-# import os
-# import re
-# import io
-# import contextlib
-# import time
-# from dotenv import load_dotenv
-
-# # Load environment variables
-# load_dotenv()
-
-# # OpenRouter API configuration
-# OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-# API_URL = "https://openrouter.ai/api/v1/chat/completions"
-# MODEL = "tngtech/deepseek-r1t-chimera:free"
-
-# def process_with_gemini(prompt, data_description, retries=3, delay=5):
-#     headers = {
-#         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-#         "Content-Type": "application/json"
-#     }
-
-#     data = {
-#         "model": MODEL,
-#         "messages": [
-#             {
-#                 "role": "user",
-#                 "content": f"{prompt}\n\nData Description:\n{data_description}\nReturn Python code only in a single code block without extra explanation."
-#             }
-#         ]
-#     }
-
-#     for attempt in range(retries):
-#         try:
-#             response = requests.post(API_URL, headers=headers, json=data)
-#             response.raise_for_status()
-#             content = response.json()["choices"][0]["message"]["content"]
-
-#             # Extract Python code block
-#             code_match = re.search(r"```(?:python)?\n(.*?)```", content, re.DOTALL)
-#             if code_match:
-#                 return code_match.group(1).strip()
-#             else:
-#                 return content.strip()
-#         except requests.exceptions.HTTPError as e:
-#             if response.status_code == 429 and attempt < retries - 1:
-#                 time.sleep(delay)
-#                 continue
-#             return f"Error processing request: {str(e)}"
-#         except Exception as e:
-#             return f"Error processing request: {str(e)}"
-
-# def execute_user_code(user_code, dfs):
-#     output = io.StringIO()
-#     local_vars = {"dfs": dfs, "pd": pd}
-
-#     try:
-#         with contextlib.redirect_stdout(output):
-#             exec(user_code, {}, local_vars)
-#     except SyntaxError as e:
-#         return f"Syntax Error: {e.text.strip()} on line {e.lineno}"
-#     except Exception as e:
-#         return f"Runtime Error: {str(e)}"
-
-#     return output.getvalue() or "Code executed successfully. No output to show."
-
-# def main():
-#     st.title("Excel Data Analysis Dashboard")
-#     st.write("Upload your Excel files and provide instructions for analysis")
-
-#     uploaded_files = st.file_uploader("Upload Excel files", type=['xlsx', 'xls'], accept_multiple_files=True)
-
-#     if uploaded_files:
-#         dfs = {}
-#         data_description = ""
-
-#         for file in uploaded_files:
-#             df = pd.read_excel(file)
-#             dfs[file.name] = df
-#             data_description += f"\nFile: {file.name}\n"
-#             data_description += f"Columns: {', '.join(df.columns)}\n"
-#             data_description += f"Number of rows: {len(df)}\n"
-#             data_description += f"Sample data:\n{df.head().to_string()}\n"
-
-#         st.subheader("Uploaded Files Information")
-#         for name, df in dfs.items():
-#             st.write(f"**{name}**")
-#             st.write(f"Shape: {df.shape}")
-#             st.dataframe(df.head())
-
-#         st.subheader("Analysis Instructions")
-#         prompt = st.text_area("Enter your instructions for data analysis", 
-#                               placeholder="Example: Compare DOBs by SSMID between the two files and find mismatches.")
-
-#         if st.button("Process Data"):
-#             if prompt:
-#                 with st.spinner("Processing your request..."):
-#                     code = process_with_gemini(prompt, data_description)
-
-#                     # Replace pd.read_excel(...) with dfs['filename']
-#                     for filename in dfs:
-#                         pattern = f"pd.read_excel\\(['\"]{re.escape(filename)}['\"].*?\\)"
-#                         replacement = f"dfs['{filename}']"
-#                         code = re.sub(pattern, replacement, code)
-
-#                     st.subheader("Generated Python Code")
-#                     st.code(code, language='python')
-
-#                     result = execute_user_code(code, dfs)
-
-#                     st.subheader("Execution Result")
-#                     st.text(result)
-#             else:
-#                 st.warning("Please enter instructions for analysis.")
-
-# if __name__ == "__main__":
-#     main()
-
-
-
 import streamlit as st
 import pandas as pd
 from io import BytesIO
@@ -275,25 +42,50 @@ if uploaded_files and len(uploaded_files) >= 2:
         df2 = dfs[col2]
 
         st.write("### Select Columns to Compare")
-        col1_select = st.selectbox("Column from file 1", df1.columns)
-        col2_select = st.selectbox("Column from file 2", df2.columns)
+        
+        # Reference column selection (common identifier)
+        st.write("#### Select Reference Column (Common Identifier)")
+        ref_col1 = st.selectbox("Reference column from file 1", df1.columns)
+        ref_col2 = st.selectbox("Reference column from file 2", df2.columns)
+        
+        # Columns to compare
+        st.write("#### Select Columns to Compare")
+        col1_select = st.selectbox("Column to compare from file 1", df1.columns)
+        col2_select = st.selectbox("Column to compare from file 2", df2.columns)
 
         if st.button("🔍 Run Comparison"):
-            merged = pd.merge(df1, df2, left_on=col1_select, right_on=col2_select, how="outer", suffixes=('_file1', '_file2'), indicator=True)
-            differences = merged[merged['_merge'] != 'both']
+            # Merge on reference columns
+            merged = pd.merge(
+                df1, 
+                df2, 
+                left_on=ref_col1, 
+                right_on=ref_col2, 
+                how="outer", 
+                suffixes=('_file1', '_file2')
+            )
+            
+            # Create comparison result
+            comparison_df = pd.DataFrame({
+                'Reference_Value': merged[ref_col1],
+                f'{col1_select}_file1': merged[f'{col1_select}_file1'],
+                f'{col2_select}_file2': merged[f'{col2_select}_file2'],
+                'Match': merged[f'{col1_select}_file1'] == merged[f'{col2_select}_file2']
+            })
+            
+            # Find differences
+            differences = comparison_df[~comparison_df['Match']]
+            
             st.success(f"Found {len(differences)} difference(s).")
-            st.dataframe(differences)
-
-            if st.button("⬇️ Download Result"):
-                file_name = st.text_input("Enter filename for download (without .xlsx)", value="comparison_result")
-                if st.button("📥 Confirm Download"):
-                    excel_bytes = to_excel(differences)
-                    st.download_button(
-                        label="Download Excel File",
-                        data=excel_bytes,
-                        file_name=f"{file_name}.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                    )
+            st.dataframe(comparison_df)
+            
+            # Download button
+            excel_bytes = to_excel(comparison_df)
+            st.download_button(
+                label="📥 Download Comparison Results",
+                data=excel_bytes,
+                file_name="comparison_results.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
 
     elif operation == "Apply Formula":
         selected_file = st.selectbox("Select file", sheet_names)
