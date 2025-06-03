@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from io import BytesIO
 
-st.set_page_config(page_title="Excel AI Dashboard", layout="wide")
+st.set_page_config(page_title="Excel Analysis Tool", layout="wide")
 
 # Helper functions
 def to_excel(df):
@@ -12,8 +12,9 @@ def to_excel(df):
     return output.getvalue()
 
 # UI - Upload files
-st.title("📊 AI-Enhanced Excel Sheet Dashboard")
+st.title("📊 Excel Analysis Tool")
 
+# Main content
 uploaded_files = st.file_uploader("Upload Excel files", type=["xlsx"], accept_multiple_files=True)
 
 if uploaded_files and len(uploaded_files) >= 2:
@@ -125,4 +126,16 @@ if uploaded_files and len(uploaded_files) >= 2:
 
 else:
     st.warning("Please upload at least 2 Excel files.")
+
+# Footer
+st.markdown("---")
+st.markdown("""
+<div style='text-align: center'>
+    <p>Developed by Krishna Sharma</p>
+    <p>
+        <a href="https://x.com/kkrishnnaaa01" target="_blank">Twitter</a> | 
+        <a href="https://www.linkedin.com/in/krishna-sharma-7953b42a2" target="_blank">LinkedIn</a>
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
