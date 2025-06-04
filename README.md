@@ -50,7 +50,7 @@ A powerful Streamlit-based web application that combines Excel file analysis wit
 
 ## 🚀 Live Demo
 
-Try the application online: [Excel Analysis Tool](https://excel-analysis-tool.streamlit.app)
+Try the application online: [Excel Analysis Tool](https://excel-analysis.streamlit.app/)
 
 ## 🛠️ Setup and Installation
 
